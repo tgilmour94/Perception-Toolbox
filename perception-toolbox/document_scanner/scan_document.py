@@ -47,7 +47,7 @@ if args["debug"]:
 #find contours of document
 #relax contours until there are 4 edges
 
-contours = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+contours = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 contours = contours[0]
 
 #document contour should be the largest contour area seen
@@ -60,7 +60,7 @@ if args["debug"]:
     cv2.waitKey(0)
 
 peri = cv2.arcLength(contour[0], True)
-peri_factor = 0.01
+peri_factor = 0.015
 
 approx_cnt = cv2.approxPolyDP(contour[0], peri_factor * peri, True)
 
@@ -86,14 +86,18 @@ approx_cnt[:2] = sorted(approx_cnt[:2], key=lambda x: x[0])
 approx_cnt[2:] = sorted(approx_cnt[2:], key=lambda x: x[0])
 
 if args["debug"]:
-    debug_edge = resized.copy()
+    cv2.destroyAllWindows()
+    debug_edge = image.copy()
     if len(approx_cnt) == 4:
-        for coord in approx_cnt:
+        for coord in approx_cnt.copy():
             print(coord)
+            coord[0] = coord[0]*w_ratio
+            coord[1] = coord[1]*h_ratio
             coord = np.array([coord])
-            cv2.drawContours(debug_edge, [coord], -1, (255, 0, 0), 2)
+            cv2.drawContours(debug_edge, [coord], -1, (0, 0, 255), 30)
             cv2.imshow("approx doc edge",debug_edge)
             cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 #convert to float32
 approx_cnt = np.array(approx_cnt, dtype =np.float32)
